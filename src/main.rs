@@ -1,4 +1,14 @@
+mod game;
+
 use bevy::prelude::*;
+
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+pub enum GameState {
+    // Splash,
+    Menu,
+    Game,
+}
+
 
 #[derive(Component)]
 struct Player;
@@ -15,13 +25,7 @@ struct Tile;
 #[derive(Component)]
 struct Character;
 
-fn nature_evolution_system(
-    mut query: Query<&mut Point, With<Territory>>
-){
-    for mut point in query.iter_mut() {
-        point.0 += 1;
-    }
-}
+
 
 fn setup_scene(
     mut commands: Commands
@@ -31,6 +35,7 @@ fn setup_scene(
         .insert(Player)
         .insert(Territory)
         .insert(Point(0));
+    commands.spawn_bundle(UiCameraBundle::default());
     
 }
 
@@ -62,6 +67,10 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(TestPrint)
         .add_startup_system(setup_scene.system())
-        .add_system(nature_evolution_system.system())
+        .add_state(GameState::Splash)
+        // this plugin will display a splash screen
+        // .add_plugin(splash::SplashPlugin)
+        .add_plugin(game::GamePlugin)
+
         .run();
 }

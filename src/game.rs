@@ -1,6 +1,7 @@
 use bevy::{prelude::*};
 use super::{GameState, Point, Territory};
 
+
 pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
@@ -8,18 +9,27 @@ impl Plugin for GamePlugin {
             SystemSet::on_enter(GameState::Game)
             .with_system(setup)
             )
+            .insert_resource(EvolveTimer(Timer::from_seconds(2.0, true)))
             .add_system(nature_evolution_system)
             .add_system(button_system);
 
     }
 }
 
+
+struct EvolveTimer(Timer);
+
+
 fn nature_evolution_system(
-    mut query: Query<&mut Point, With<Territory>>
+    mut query: Query<&mut Point, With<Territory>>,
+    time: Res<Time>, mut timer: ResMut<EvolveTimer>,
 ){
-    for mut point in query.iter_mut() {
-        point.0 += 1;
+    if timer.0.tick(time.delta()).just_finished() {
+        for mut point in query.iter_mut() {
+            point.0 += 1;
+        }
     }
+    
 }
 
 const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
@@ -32,8 +42,9 @@ fn button_system(
         (Changed<Interaction>, With<Button>),
     >,
     mut text_query: Query<&mut Text>,
-    mut point_query: Query<&mut Point, With<Territory>>
+    mut point_query: Query<&Point, With<Territory>>
 ) {
+
     for (interaction, mut color, children) in interaction_query.iter_mut() {
         let mut text = text_query.get_mut(children[0]).unwrap();
         for point in point_query.iter_mut(){
@@ -51,9 +62,9 @@ fn button_system(
                     *color = NORMAL_BUTTON.into();
                 }
             }
-
-        }
+        }               
     }
+    
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -77,7 +88,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .with_children(|parent| {
             parent.spawn_bundle(TextBundle {
                 text: Text::with_section(
-                    "Button",
+                    "Point",
                     TextStyle {
                         font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                         font_size: 40.0,

@@ -1,19 +1,51 @@
 mod game;
 
-use bevy::{prelude::*, winit::WinitSettings};
+use bevy::{
+    prelude::*,
+    //winit::WinitSettings
+};
+
+// use bevy_vox::*;
+
+fn main() {
+
+    App::new()
+        .insert_resource(Msaa { samples: 4 })
+        .add_plugins(DefaultPlugins)
+        //.insert_resource(WinitSettings::desktop_app())        
+        .insert_resource(Msaa { samples: 4 })
+        // .add_plugin(VoxPlugin)
+        .add_plugin(TestPrint)
+        .add_plugin(game::GamePlugin)
+        .add_startup_system(setup_scene)
+        .add_state(GameState::Game)
+        // this plugin will display a splash screen
+        // .add_plugin(splash::SplashPlugin)
+        .run();
+}
+
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
     // Splash,
-    Menu,
+    // Menu,
     Game,
 }
 
+#[derive(Default)]
+struct Game {
+    board: Vec<Vec<Cell>>,
+    player: Player,
+    score: Point,
+    wave : i32,
+    camera_should_focus: Vec3,
+    camera_is_focus: Vec3,
+}
 
-#[derive(Component)]
+#[derive(Default, Component)]
 struct Player;
 
-#[derive(Component)]
+#[derive(Default, Component)]
 struct Point(i32);
 
 #[derive(Component)]
@@ -28,7 +60,8 @@ struct Character;
 
 
 fn setup_scene(
-    mut commands: Commands
+    mut commands: Commands,
+    asset_server: Res<AssetServer>
 ){
     commands
         .spawn()
@@ -36,7 +69,22 @@ fn setup_scene(
         .insert(Territory)
         .insert(Point(0));
     commands.spawn_bundle(UiCameraBundle::default());
-    
+    commands.spawn_scene(asset_server.load("SimField.vox"));    
+    /*
+    commands
+        // light
+        .spawn_bundle(PointLightBundle {
+            transform: Transform::from_translation(Vec3::new(4.0, 5.0, 4.0)),
+            ..Default::default()
+        });
+    commands
+        // camera
+        .spawn_bundle(PerspectiveCameraBundle {
+            transform: Transform::from_translation(Vec3::new(6.0, -6.0, 6.0))
+                .looking_at(Vec3::default(), Vec3::Y),
+            ..Default::default()
+        });
+    */
 }
 
 struct PrintTimer(Timer);
@@ -61,17 +109,5 @@ impl Plugin for TestPrint {
     }
 }
 
-fn main() {
 
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .insert_resource(WinitSettings::desktop_app())
-        .add_plugin(TestPrint)
-        .add_startup_system(setup_scene)
-        .add_state(GameState::Game)
-        // this plugin will display a splash screen
-        // .add_plugin(splash::SplashPlugin)
-        .add_plugin(game::GamePlugin)
 
-        .run();
-}

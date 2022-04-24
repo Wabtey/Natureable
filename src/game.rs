@@ -1,15 +1,15 @@
-use bevy::prelude::*;
-use super::{despawn_screen, DisplayQuality, GameState, Volume, TEXT_COLOR};
+use bevy::{prelude::*};
+use super::{GameState, Point, Territory};
 
 pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(GameState::Game).with_system(game_setup))
-            .add_system_set(SystemSet::on_update(GameState::Game).with_system(game))
-            .add_system_set(
-                SystemSet::on_exit(GameState::Game).with_system(despawn_screen::<OnGameScreen>),
+        app.add_system_set(
+            SystemSet::on_enter(GameState::Game)
+            .with_system(setup)
             )
-            .add_system(nature_evolution_system.system());
+            .add_system(nature_evolution_system)
+            .add_system(button_system);
 
     }
 }
@@ -22,44 +22,70 @@ fn nature_evolution_system(
     }
 }
 
-// Tag component used to tag entities added on the game screen
+const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
+const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
+const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
-#[derive(Component)]
-struct OnGameScreen;
-
-#[derive(Deref, DerefMut)]
-struct GameTimer(Timer);
-
-fn game_setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
+fn button_system(
+    mut interaction_query: Query<
+        (&Interaction, &mut UiColor, &Children),
+        (Changed<Interaction>, With<Button>),
+    >,
+    mut text_query: Query<&mut Text>,
+    mut point_query: Query<&mut Point, With<Territory>>
 ) {
-    let font = asset_server.load("fonts/FiraSans-Bold.ttf");
+    for (interaction, mut color, children) in interaction_query.iter_mut() {
+        let mut text = text_query.get_mut(children[0]).unwrap();
+        for point in point_query.iter_mut(){
+            match *interaction {
+                Interaction::Clicked => {
+                    text.sections[0].value = point.0.to_string();
+                    *color = PRESSED_BUTTON.into();
+                }
+                Interaction::Hovered => {
+                    text.sections[0].value = "Upgrade".to_string();
+                    *color = HOVERED_BUTTON.into();
+                }
+                Interaction::None => {
+                    text.sections[0].value = point.0.to_string();
+                    *color = NORMAL_BUTTON.into();
+                }
+            }
+
+        }
+    }
+}
+
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    // ui camera
+    commands.spawn_bundle(UiCameraBundle::default());
     commands
-        // First create a `NodeBundle` for centering what we want to display
-        .spawn_bundle(NodeBundle {
+        .spawn_bundle(ButtonBundle {
             style: Style {
-                // This will center the current node
+                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                // center button
                 margin: Rect::all(Val::Auto),
-                // This will display its children in a column, from top to bottom. Unlike
-                // in Flexbox, Bevy origin is on bottom left, so the vertical axis is reversed
-                flex_direction: FlexDirection::ColumnReverse,
-                // `align_items` will align children on the cross axis. Here the main axis is
-                // vertical (column), so the cross axis is horizontal. This will center the
-                // children
+                // horizontally center child text
+                justify_content: JustifyContent::Center,
+                // vertically center child text
                 align_items: AlignItems::Center,
                 ..default()
             },
-            color: Color::BLACK.into(),
+            color: NORMAL_BUTTON.into(),
             ..default()
         })
-        .insert(OnGameScreen)
-}
-
-// Tick the timer, and change state when finished
-
-fn game(
-    mut game_state: ResMut<State<GameState>>,
-) {
-    // game_state.set(GameState::Menu).unwrap();
+        .with_children(|parent| {
+            parent.spawn_bundle(TextBundle {
+                text: Text::with_section(
+                    "Button",
+                    TextStyle {
+                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                        font_size: 40.0,
+                        color: Color::rgb(0.9, 0.9, 0.9),
+                    },
+                    Default::default(),
+                ),
+                ..default()
+            });
+        });
 }

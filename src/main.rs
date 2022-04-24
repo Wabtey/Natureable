@@ -1,9 +1,9 @@
 mod game;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, winit::WinitSettings};
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
-pub enum GameState {
+enum GameState {
     // Splash,
     Menu,
     Game,
@@ -20,7 +20,7 @@ struct Point(i32);
 struct Territory;
 
 #[derive(Component)]
-struct Tile;
+struct Cell;
 
 #[derive(Component)]
 struct Character;
@@ -57,7 +57,7 @@ pub struct TestPrint;
 impl Plugin for TestPrint {
     fn build(&self, app: &mut App) {
         app.insert_resource(PrintTimer(Timer::from_seconds(2.0, true)))
-            .add_system(print_point_status_system.system());
+            .add_system(print_point_status_system);
     }
 }
 
@@ -65,9 +65,10 @@ fn main() {
 
     App::new()
         .add_plugins(DefaultPlugins)
+        .insert_resource(WinitSettings::desktop_app())
         .add_plugin(TestPrint)
-        .add_startup_system(setup_scene.system())
-        .add_state(GameState::Splash)
+        .add_startup_system(setup_scene)
+        .add_state(GameState::Game)
         // this plugin will display a splash screen
         // .add_plugin(splash::SplashPlugin)
         .add_plugin(game::GamePlugin)

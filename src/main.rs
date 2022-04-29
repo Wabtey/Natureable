@@ -4,10 +4,9 @@ use bevy::{
     prelude::*,
     //winit::WinitSettings
 };
-use bevy_vox::*;
-use bevy_flycam::*;
 
-#[bevy_main]
+// use bevy_vox::*;
+
 fn main() {
 
     App::new()
@@ -15,19 +14,13 @@ fn main() {
         .add_plugins(DefaultPlugins)
         //.insert_resource(WinitSettings::desktop_app())        
         .insert_resource(Msaa { samples: 4 })
-        .add_plugin(VoxPlugin)
-        .add_plugin(PlayerPlugin)
-        .insert_resource(MovementSettings {
-            sensitivity: 0.00015, // default: 0.00012
-            speed: 12.0, // default: 12.0
-        })
+        // .add_plugin(VoxPlugin)
         .add_plugin(TestPrint)
         .add_plugin(game::GamePlugin)
         .add_startup_system(setup_scene)
         .add_state(GameState::Game)
         // this plugin will display a splash screen
         // .add_plugin(splash::SplashPlugin)
-
         .run();
 }
 
@@ -77,26 +70,21 @@ fn setup_scene(
         .insert(Point(0));
     commands.spawn_bundle(UiCameraBundle::default());
     commands.spawn_scene(asset_server.load("SimField.vox"));    
+    /*
     commands
         // light
         .spawn_bundle(PointLightBundle {
-            transform: Transform::from_translation(Vec3::new(0.0, 6.0, 25.0)),
-            ..Default::default()
-        });
-    commands
-        .spawn_bundle(PointLightBundle {
-            transform: Transform::from_translation(Vec3::new(4.0, 6.0, 2.0)),
+            transform: Transform::from_translation(Vec3::new(4.0, 5.0, 4.0)),
             ..Default::default()
         });
     commands
         // camera
         .spawn_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_translation(Vec3::new(0.0, -100.0, 100.0))
+            transform: Transform::from_translation(Vec3::new(6.0, -6.0, 6.0))
                 .looking_at(Vec3::default(), Vec3::Y),
             ..Default::default()
         });
-        // 0 -100 50
-        // 0 0 50
+    */
 }
 
 struct PrintTimer(Timer);

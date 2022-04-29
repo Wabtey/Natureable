@@ -73,6 +73,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(ButtonBundle {
             style: Style {
+                // 150 65
                 size: Size::new(Val::Px(150.0), Val::Px(65.0)),
                 // center button
                 margin: Rect::all(Val::Auto),
@@ -80,10 +81,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 justify_content: JustifyContent::Center,
                 // vertically center child text
                 align_items: AlignItems::Center,
-                ..default()
+                ..Default::default()
             },
             color: NORMAL_BUTTON.into(),
-            ..default()
+            ..Default::default()
         })
         .with_children(|parent| {
             parent.spawn_bundle(TextBundle {
@@ -96,7 +97,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     },
                     Default::default(),
                 ),
-                ..default()
+                ..Default::default()
             });
         });
 }

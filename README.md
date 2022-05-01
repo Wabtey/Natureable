@@ -5,6 +5,8 @@ Fight for your life, longevity, influence against Enemies such as Human (or mayb
 
 PB : Optimize voxel import
 
+ATM : y'a un bouton et une map voxel
+
 <!--
  * [ ] SimField
  * [ ] Choose Nature
